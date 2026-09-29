@@ -13,6 +13,7 @@ class ZohoCrmClient
     {
         return $this->get('/crm/v8/Products', [
             'fields' => 'Product_Name,Product_Code,Unit_Price,Product_Active',
+            'per_page' => 200,
         ])->json('data', []);
     }
 
@@ -28,7 +29,18 @@ class ZohoCrmClient
 
     public function getAccount(string $accountId): ?array
     {
-        return $this->get("/crm/v8/Accounts/{$accountId}")->json('data.0');
+        $field = config('zoho.crm_price_book_field');
+
+        return $this->get("/crm/v8/Accounts/{$accountId}", [
+            'fields' => "Account_Name,{$field}",
+        ])->json('data.0');
+    }
+
+    public function getPriceBookProducts(string $priceBookId): array
+    {
+        return $this->get("/crm/v8/Price_Books/{$priceBookId}/Products", [
+            'fields' => 'Product_Name,Product_Code,list_price',
+        ])->json('data') ?? [];
     }
 
     private function get(string $path, array $query = []): Response
